@@ -3,11 +3,7 @@
   "version": "1.0.0",
   "description": "Reflection support for Promise types",
   "homepage": "http://canjs.com",
-  "author": {
-    "name": "Bitovi",
-    "email": "contact@bitovi.com",
-    "url": "http://bitovi.com"
-  },
+  "author": "Bitovi <contact@bitovi.com> (http://bitovi.com)",
   "scripts": {
     "preversion": "npm test && npm run build",
     "version": "git commit -am \"Update dist for release\" && git checkout -b release && git add -f dist/",
@@ -59,7 +55,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/canjs/can-observation.git"
+    "url": "git://github.com/canjs/can-reflect-promise.git"
   },
   "bit-docs": {
     "dependencies": {
@@ -75,6 +71,13 @@
     "readme": {
       "apis": "./docs/apis.json"
     },
-    "parent": "can-observation"
-  }
+    "parent": "can-reflect-promise"
+  },
+  "bugs": {
+    "url": "https://github.com/canjs/can-reflect-promise/issues"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "license": "MIT"
 }

@@ -6,6 +6,7 @@ var Observation = require("can-observation");
 var CID = require("can-cid");
 var assign = require("can-util/js/assign/assign");
 var canEvent = require("can-event");
+var singleReference = require("can-util/js/single-reference/single-reference");
 
 var getValueSymbol = canSymbol.for("can.getValue"),
 	getKeyValueSymbol = canSymbol.for("can.getKeyValue"),
@@ -24,13 +25,17 @@ var promiseDataPrototype = {
 };
 assign(promiseDataPrototype, canEvent);
 canReflect.set(promiseDataPrototype, onKeyValueSymbol, function(key, handler) {
-	var observeData = this[observeDataSymbol];
-	var translated = handler[CID(this[observeDataSymbol]) + ":" + key] = function() {
+	var observeData = this;
+	var translated = function() {
 		handler(observeData[key]);
 	};
+	singleReference.set(handler, this, translated, key);
 	canEvent.on.call(this, "state", translated);
 });
-
+canReflect.set(promiseDataPrototype, offKeyValueSymbol, function(key, handler) {
+	var translated = singleReference.get(handler, this, key);
+	canEvent.off.call(this, "state", translated);
+});
 
 function initPromise(promise) {
 	var observeData = promise[observeDataSymbol];
@@ -125,9 +130,10 @@ function setupPromise(value) {
 			initPromise(this);
 		}
 		var promise = this;
-		var translated = handler[CID(this[observeDataSymbol]) + ":" + key] = function() {
+		var translated = function() {
 			handler(promise[getKeyValueSymbol](key));
 		};
+		singleReference.set(handler, this, translated, key);
 		canEvent.on.call(this[observeDataSymbol], "state", translated);
 	},
 	canSymbol.for("can.offValue"),
@@ -136,7 +142,7 @@ function setupPromise(value) {
 	},
 	offKeyValueSymbol,
 	function(key, handler) {
-		var translated = handler[CID(this[observeDataSymbol]) + ":" + key];
+		var translated = singleReference.get(handler, this, key);
 		if(translated) {
 			canEvent.off.call(this[observeDataSymbol], "state", translated);
 		}

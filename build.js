@@ -5,12 +5,7 @@ stealTools.export({
 		config: __dirname + "/package.json!npm"
 	},
 	outputs: {
-		"+amd": {},
-		"+standalone": {
-			exports: {
-				"can-namespace": "can"
-			}
-		}
+		"+amd": {}
 	}
 }).catch(function(e){
 	

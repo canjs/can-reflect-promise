@@ -33,7 +33,7 @@ canReflect.set(promiseDataPrototype, onKeyValueSymbol, function(key, handler) {
 	canEvent.on.call(this, "state", translated);
 });
 canReflect.set(promiseDataPrototype, offKeyValueSymbol, function(key, handler) {
-	var translated = singleReference.get(handler, this, key);
+	var translated = singleReference.getAndDelete(handler, this, key);
 	canEvent.off.call(this, "state", translated);
 });
 
@@ -142,7 +142,7 @@ function setupPromise(value) {
 	},
 	offKeyValueSymbol,
 	function(key, handler) {
-		var translated = singleReference.get(handler, this, key);
+		var translated = singleReference.getAndDelete(handler, this, key);
 		if(translated) {
 			canEvent.off.call(this[observeDataSymbol], "state", translated);
 		}

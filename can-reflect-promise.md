@@ -5,9 +5,12 @@
 @signature `canReflectPromise(promise)`
 
 If `promise` is an instance of a Promise type (either provided natively by the platform or by a polyfill library), the prototype
-of the Promise type is decorated with [can-symbol] symbols for `onKeyValue`, `offKeyValue`, `getKeyValue`, `onValue`, and `offValue`, which allow it to be used like an observable Map-like in reflection.
+of the Promise type is decorated with [can-symbol] symbols for `@@@@can.onKeyValue`, `@@@@can.offKeyValue`,
+`@@@@can.getKeyValue`, `@@@@can.onValue`, and `@@@@can.offValue`, which allow it to be used like an observable Map-like in 
+reflection.
 
-Then `promise` and all future instances of `promise.constructor` will be initialized on first access to have the following keys available through [can-symbol/symbols/getKeyValue @@@@can.getKeyValue]:
+Then `promise` and all future instances of `promise.constructor` will be initialized on first access to have the following keys
+available through [can-symbol/symbols/getKeyValue @@@@can.getKeyValue]:
 
 * "state" -- one of "pending", "resolved", or "rejected"
 * "isPending" -- true if the promise neither resolved nor rejected, false otherwise.
@@ -24,7 +27,8 @@ the Promise has already resolved, and will remain so during synchronous executio
 value or rejected reason is to listen for the change in state or 
 value with [can-symbol/symbols/onKeyValue @@@@can.onKeyValue] immediately after creating a Promise.
 
-In the cases where `promise` is a plain object (e.g. if it is a `jQuery.Deferred`), the symbols will be applied to `promise` itself, not to the proto.
+In the cases where `promise` is a plain object (e.g. if it is a `jQuery.Deferred`), the symbols will be applied to `promise`
+itself, not to the proto.
 
 ```
 var p = new Promise(function(resolve) {

@@ -1,5 +1,6 @@
 @function {Promise} can-reflect-promise
 @parent can-ecosystem
+@package ./package.json
 @description Expose an observable, Map-like API on Promise types.
 
 @signature `canReflectPromise(promise)`

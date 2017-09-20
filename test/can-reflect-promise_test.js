@@ -31,7 +31,18 @@ QUnit.module("can-reflect-promise", {
 				tempPromise[key] = new Function("value", "return new this(function(resolve, reject) { " + key + "(value); });");
 			}
 		});
-		tempPromise.prototype = Object.create(nativePromise.prototype);
+
+		var protoDefs = {};
+		protoDefs[canSymbol.for("can.observeData")] = {
+			value: null,
+			writable: true
+		};
+		protoDefs[canSymbol.for("can.getKeyValue")] = {
+			value: null,
+			writable: true
+		};
+
+		tempPromise.prototype = Object.create(nativePromise.prototype, protoDefs);
 
 		Promise = tempPromise;
 	},

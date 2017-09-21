@@ -35,11 +35,13 @@ QUnit.module("can-reflect-promise", {
 		var protoDefs = {};
 		protoDefs[canSymbol.for("can.observeData")] = {
 			value: null,
-			writable: true
+			writable: true,
+			configurable: true
 		};
 		protoDefs[canSymbol.for("can.getKeyValue")] = {
 			value: null,
-			writable: true
+			writable: true,
+			configurable: true
 		};
 
 		tempPromise.prototype = Object.create(nativePromise.prototype, protoDefs);

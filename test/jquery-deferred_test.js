@@ -24,8 +24,8 @@ QUnit.test("has all necessary symbols", function() {
 	canReflectPromise(d);
 	QUnit.ok(d[canSymbol.for("can.getKeyValue")], "can.getKeyValue");
 	QUnit.ok(d[canSymbol.for("can.getValue")], "can.getValue");
-	QUnit.ok(d[canSymbol.for("can.onValue")], "can.onValue");
 	QUnit.ok(d[canSymbol.for("can.onKeyValue")], "can.onKeyValue");
+	QUnit.ok(d[canSymbol.for("can.offKeyValue")], "can.offKeyValue");
 	QUnit.equal(d[canSymbol.for("can.isValueLike")], false, "can.isValueLike");
 
 });
@@ -49,16 +49,12 @@ QUnit.test("getKeyValue for promise-specific values", 8, function() {
 	}, 10);
 });
 
-QUnit.test("onKeyValue for promise-specific values", 4, function() {
-	stop(4);
+QUnit.test("onKeyValue for promise-specific values", 3, function() {
+	stop(3);
 	var d = new $.Deferred();
 	canReflectPromise(d);
 	d[canSymbol.for("can.onKeyValue")]("value", function(newVal) {
 		QUnit.equal(newVal, "a", "value updates on event");
-		start();
-	});
-	d[canSymbol.for("can.onValue")](function(newVal) {
-		QUnit.equal(newVal, "a", "value updates on event with onValue");
 		start();
 	});
 	d[canSymbol.for("can.onKeyValue")]("isResolved", function(newVal) {

@@ -31,9 +31,8 @@
     "npmAlgorithm": "flat"
   },
   "dependencies": {
-    "can-cid": "^1.0.3",
     "can-key-tree": "<2.0.0",
-    "can-observation": "^3.3.0",
+    "can-observation": "^4.0.0-pre.14",
     "can-observation-recorder": "<2.0.0",
     "can-queues": "<2.0.0",
     "can-reflect": "^1.1.0",

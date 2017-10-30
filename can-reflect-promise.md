@@ -1,5 +1,6 @@
 @function {Promise} can-reflect-promise
-@parent can-infrastructure
+@parent can-typed-data
+@collection can-infrastructure
 @package ./package.json
 @description Expose an observable, Map-like API on Promise types.
 

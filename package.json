@@ -2,8 +2,8 @@
   "name": "can-reflect-promise",
   "version": "2.0.0-pre.4",
   "description": "Reflection support for Promise types",
-  "homepage": "http://canjs.com",
-  "author": "Bitovi <contact@bitovi.com> (http://bitovi.com)",
+  "homepage": "https://canjs.com/doc/can-reflect-promise.html",
+  "author": "Bitovi <contact@bitovi.com> (https://www.bitovi.com)",
   "scripts": {
     "preversion": "npm test",
     "postpublish": "git push --tags && git push",

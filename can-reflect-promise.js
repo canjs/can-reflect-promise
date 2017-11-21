@@ -1,6 +1,6 @@
 var canReflect = require("can-reflect");
 var canSymbol = require("can-symbol");
-var dev = require("can-util/js/dev/dev");
+var dev = require("can-log/dev/dev");
 
 var Observation = require("can-observation");
 var CID = require("can-cid");

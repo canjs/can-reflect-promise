@@ -2,6 +2,7 @@ var QUnit = require("steal-qunit");
 var GLOBAL = require("can-util/js/global/global");
 var canSymbol = require("can-symbol");
 var canReflectPromise = require("can-reflect-promise");
+var testHelpers = require("can-test-helpers");
 
 var nativePromise = GLOBAL().Promise;
 var Promise;
@@ -108,3 +109,19 @@ QUnit.test("onKeyValue for promise-specific values", 3, function() {
 	});
 });
 
+testHelpers.dev.devOnlyTest("promise readers throw errors (#70)", function() {
+	var teardown = testHelpers.dev.willError(/Rejected Reason/);
+
+	var promise = Promise.reject("Rejected Reason");
+
+	canReflectPromise(promise);
+
+	// trigger initPromise
+	promise[canSymbol.for("can.onKeyValue")]("value", function() {});
+
+	stop();
+	promise.catch(function() {
+		QUnit.equal(teardown(), 1, 'error thrown');
+		start();
+	});
+});

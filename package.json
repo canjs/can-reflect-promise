@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "can-key-tree": "^1.0.0",
-    "can-log": "^0.1.2",
+    "can-log": "^1.0.0",
     "can-observation": "^4.0.0",
     "can-observation-recorder": "^1.0.0",
     "can-queues": "^1.0.0",

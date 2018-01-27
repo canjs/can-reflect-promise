@@ -3,8 +3,8 @@ var canSymbol = require("can-symbol");
 var ObservationRecorder = require("can-observation-recorder");
 var queues = require("can-queues");
 var KeyTree = require("can-key-tree");
+var dev = require("can-log/dev/dev");
 
-var dev = require("can-util/js/dev/dev");
 
 var getKeyValueSymbol = canSymbol.for("can.getKeyValue"),
 	observeDataSymbol = canSymbol.for("can.meta");

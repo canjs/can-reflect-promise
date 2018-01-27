@@ -3,6 +3,7 @@ var GLOBAL = require("can-util/js/global/global");
 var canSymbol = require("can-symbol");
 var canReflectPromise = require("can-reflect-promise");
 var ObservationRecorder = require("can-observation-recorder");
+var testHelpers = require("can-test-helpers");
 
 var nativePromise = GLOBAL().Promise;
 var Promise;
@@ -113,3 +114,21 @@ QUnit.test("computable", 4, function() {
 		start();
 	});
 });
+
+testHelpers.dev.devOnlyTest("promise readers throw errors (#70)", function() {
+	var teardown = testHelpers.dev.willError(/Rejected Reason/);
+
+	var promise = Promise.reject("Rejected Reason");
+
+	canReflectPromise(promise);
+
+	// trigger initPromise
+	promise[canSymbol.for("can.onKeyValue")]("value", function() {});
+
+	stop();
+	promise.catch(function() {
+		QUnit.equal(teardown(), 1, 'error thrown');
+		start();
+	});
+});
+

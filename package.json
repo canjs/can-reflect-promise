@@ -14,7 +14,6 @@
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
-    "build": "node build.js",
     "develop": "done-serve --static --develop --port 8080",
     "detect-cycle": "detect-cyclic-packages --ignore done-serve"
   },
@@ -31,10 +30,10 @@
     "npmAlgorithm": "flat"
   },
   "dependencies": {
-    "can-key-tree": "<2.0.0",
-    "can-observation": "^4.0.0-pre.14",
-    "can-observation-recorder": "<2.0.0",
-    "can-queues": "<2.0.0",
+    "can-key-tree": "^1.0.0",
+    "can-observation": "^4.0.0",
+    "can-observation-recorder": "^1.0.0",
+    "can-queues": "^1.0.0",
     "can-reflect": "^1.1.0",
     "can-symbol": "^1.0.0",
     "can-util": "^3.9.0"

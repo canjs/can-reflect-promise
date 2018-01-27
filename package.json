@@ -1,13 +1,12 @@
 {
   "name": "can-reflect-promise",
-  "version": "1.1.5",
+  "version": "2.0.0-pre.5",
   "description": "Reflection support for Promise types",
-  "homepage": "http://canjs.com",
-  "author": "Bitovi <contact@bitovi.com> (http://bitovi.com)",
+  "homepage": "https://canjs.com/doc/can-reflect-promise.html",
+  "author": "Bitovi <contact@bitovi.com> (https://www.bitovi.com)",
   "scripts": {
-    "preversion": "npm test && npm run build",
-    "version": "git commit -am \"Update dist for release\" && git checkout -b release && git add -f dist/",
-    "postversion": "git push --tags && git checkout master && git branch -D release && git push origin master",
+    "preversion": "npm test",
+    "postpublish": "git push --tags && git push",
     "testee": "testee test/test.html --browsers firefox",
     "test": "npm run detect-cycle && npm run jshint && npm run testee",
     "jshint": "jshint *.js --config",
@@ -15,7 +14,6 @@
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
-    "build": "node build.js",
     "develop": "done-serve --static --develop --port 8080",
     "detect-cycle": "detect-cyclic-packages --ignore done-serve"
   },
@@ -32,10 +30,11 @@
     "npmAlgorithm": "flat"
   },
   "dependencies": {
-    "can-cid": "^1.0.3",
-    "can-event": "^3.5.0",
+    "can-key-tree": "^1.0.0",
     "can-log": "^0.1.2",
-    "can-observation": "^3.3.0",
+    "can-observation": "^4.0.0",
+    "can-observation-recorder": "^1.0.0",
+    "can-queues": "^1.0.0",
     "can-reflect": "^1.1.0",
     "can-symbol": "^1.0.0",
     "can-util": "^3.9.0"

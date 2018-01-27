@@ -1,19 +1,13 @@
 var canReflect = require("can-reflect");
 var canSymbol = require("can-symbol");
+var ObservationRecorder = require("can-observation-recorder");
+var queues = require("can-queues");
+var KeyTree = require("can-key-tree");
 var dev = require("can-log/dev/dev");
 
-var Observation = require("can-observation");
-var CID = require("can-cid");
-var assign = require("can-util/js/assign/assign");
-var canEvent = require("can-event");
-var singleReference = require("can-util/js/single-reference/single-reference");
 
-var getValueSymbol = canSymbol.for("can.getValue"),
-	getKeyValueSymbol = canSymbol.for("can.getKeyValue"),
-	onValueSymbol = canSymbol.for("can.onValue"),
-	onKeyValueSymbol = canSymbol.for("can.onKeyValue"),
-	offKeyValueSymbol = canSymbol.for("can.offKeyValue"),
-	observeDataSymbol = canSymbol.for("can.observeData");
+var getKeyValueSymbol = canSymbol.for("can.getKeyValue"),
+	observeDataSymbol = canSymbol.for("can.meta");
 
 var promiseDataPrototype = {
 	isPending: true,
@@ -23,19 +17,15 @@ var promiseDataPrototype = {
 	value: undefined,
 	reason: undefined
 };
-assign(promiseDataPrototype, canEvent);
-canReflect.set(promiseDataPrototype, onKeyValueSymbol, function(key, handler) {
-	var observeData = this;
-	var translated = function() {
-		handler(observeData[key]);
-	};
-	singleReference.set(handler, this, translated, key);
-	canEvent.on.call(this, "state", translated);
-});
-canReflect.set(promiseDataPrototype, offKeyValueSymbol, function(key, handler) {
-	var translated = singleReference.getAndDelete(handler, this, key);
-	canEvent.off.call(this, "state", translated);
-});
+
+function setVirtualProp(promise, property, value) {
+	var observeData = promise[observeDataSymbol];
+	var old = observeData[property];
+	observeData[property] = value;
+	queues.enqueueByQueue(observeData.handlers.getNode([property]), promise, [value,old], function() {
+		return {};
+	},["Promise", promise, "resolved with value", value, "and changed virtual property: "+property]);
+}
 
 function initPromise(promise) {
 	var observeData = promise[observeDataSymbol];
@@ -47,20 +37,22 @@ function initPromise(promise) {
 			value: Object.create(promiseDataPrototype)
 		});
 		observeData = promise[observeDataSymbol];
-		CID(observeData);
+		observeData.handlers = new KeyTree([Object, Object, Array]);
 	}
 	promise.then(function(value){
-		observeData.isPending = false;
-		observeData.isResolved = true;
-		observeData.value = value;
-		observeData.state = "resolved";
-		observeData.dispatch("state",["resolved","pending"]);
+		queues.batch.start();
+		setVirtualProp(promise, "isPending", false);
+		setVirtualProp(promise, "isResolved", true);
+		setVirtualProp(promise, "value", value);
+		setVirtualProp(promise, "state", "resolved");
+		queues.batch.stop();
 	}, function(reason){
-		observeData.isPending = false;
-		observeData.isRejected = true;
-		observeData.reason = reason;
-		observeData.state = "rejected";
-		observeData.dispatch("state",["rejected","pending"]);
+		queues.batch.start();
+		setVirtualProp(promise, "isPending", false);
+		setVirtualProp(promise, "isRejected", true);
+		setVirtualProp(promise, "reason", reason);
+		setVirtualProp(promise, "state", "rejected");
+		queues.batch.stop();
 
 		//!steal-remove-start
 		dev.error("Failed promise:", reason);
@@ -94,61 +86,40 @@ function setupPromise(value) {
 		}
 	}
 
-	// For conciseness and ES5 compatibility, the key/value pairs of the symbols
-	// and their respective values for proto are a list, and every other iteration
-	// in forEach sets a symbol to a value.
-	[getKeyValueSymbol,
-	function(key) {
-		if(!this[observeDataSymbol]) {
-			initPromise(this);
-		}
-		
-		Observation.add(this[observeDataSymbol], "state");
-		switch(key) {
-			case "state":
-			case "isPending":
-			case "isResolved":
-			case "isRejected":
-			case "value":
-			case "reason":
-			return this[observeDataSymbol][key];
-			default:
-			return this[key];
-		}
-	}, 
-	getValueSymbol,
-	function() {
-		return this[getKeyValueSymbol]("value");
-	}, canSymbol.for("can.isValueLike"), false,
-	onValueSymbol,
-	function(handler) {
-		return this[onKeyValueSymbol]("value", handler);
-	},
-	onKeyValueSymbol,
-	function(key, handler) {
-		if(!this[observeDataSymbol]) {
-			initPromise(this);
-		}
-		var promise = this;
-		var translated = function() {
-			handler(promise[getKeyValueSymbol](key));
-		};
-		singleReference.set(handler, this, translated, key);
-		canEvent.on.call(this[observeDataSymbol], "state", translated);
-	},
-	canSymbol.for("can.offValue"),
-	function(handler) {
-		return this[offKeyValueSymbol]("value", handler);
-	},
-	offKeyValueSymbol,
-	function(key, handler) {
-		var translated = singleReference.getAndDelete(handler, this, key);
-		if(translated) {
-			canEvent.off.call(this[observeDataSymbol], "state", translated);
-		}
-	}].forEach(function(symbol, index, list) {
-		if(index % 2 === 0) {
-			canReflect.set(proto, symbol, list[index + 1]);
+	canReflect.assignSymbols(proto, {
+		"can.getKeyValue": function(key) {
+			if(!this[observeDataSymbol]) {
+				initPromise(this);
+			}
+
+			ObservationRecorder.add(this, key);
+			switch(key) {
+				case "state":
+				case "isPending":
+				case "isResolved":
+				case "isRejected":
+				case "value":
+				case "reason":
+				return this[observeDataSymbol][key];
+				default:
+				return this[key];
+			}
+		},
+		"can.getValue": function() {
+			return this[getKeyValueSymbol]("value");
+		},
+		"can.isValueLike": false,
+		"can.onKeyValue": function(key, handler, queue) {
+			if(!this[observeDataSymbol]) {
+				initPromise(this);
+			}
+			this[observeDataSymbol].handlers.add([key, queue || "mutate", handler]);
+		},
+		"can.offKeyValue": function(key, handler, queue) {
+			if(!this[observeDataSymbol]) {
+				initPromise(this);
+			}
+			this[observeDataSymbol].handlers.delete([key, queue || "mutate", handler]);
 		}
 	});
 }

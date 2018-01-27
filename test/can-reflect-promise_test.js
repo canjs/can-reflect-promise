@@ -2,6 +2,7 @@ var QUnit = require("steal-qunit");
 var GLOBAL = require("can-util/js/global/global");
 var canSymbol = require("can-symbol");
 var canReflectPromise = require("can-reflect-promise");
+var ObservationRecorder = require("can-observation-recorder");
 var testHelpers = require("can-test-helpers");
 
 var nativePromise = GLOBAL().Promise;
@@ -19,14 +20,14 @@ QUnit.module("can-reflect-promise", {
 			} else {
 				// If no Reflect in platform, assume ES5 is good.
 				nativePromise.apply(this, arguments);
-				return this;				
+				return this;
 			}
 		}
 
 		["resolve", "reject"].forEach(function(key) {
 			if(~nativePromise[key].toString().indexOf("[native code]")) {
 				// This works fine for platform native promises that know to return "new this" when constructing
-				tempPromise[key] = nativePromise[key];			
+				tempPromise[key] = nativePromise[key];
 			} else {
 				// Steal's promises aren't that smart, though.
 				tempPromise[key] = new Function("value", "return new this(function(resolve, reject) { " + key + "(value); });");
@@ -67,8 +68,8 @@ QUnit.test("has all necessary symbols", function() {
 	canReflectPromise(p);
 	QUnit.ok(p[canSymbol.for("can.getKeyValue")], "can.getKeyValue");
 	QUnit.ok(p[canSymbol.for("can.getValue")], "can.getValue");
-	QUnit.ok(p[canSymbol.for("can.onValue")], "can.onValue");
 	QUnit.ok(p[canSymbol.for("can.onKeyValue")], "can.onKeyValue");
+	QUnit.ok(p[canSymbol.for("can.offKeyValue")], "can.offKeyValue");
 	QUnit.equal(p[canSymbol.for("can.isValueLike")], false, "can.isValueLike");
 
 });
@@ -88,13 +89,18 @@ QUnit.test("getKeyValue for promise-specific values", 8, function() {
 		QUnit.equal(p[canSymbol.for("can.getKeyValue")]("isResolved"), true, "isResolved true in async");
 		QUnit.equal(p[canSymbol.for("can.getKeyValue")]("state"), "resolved", "state resolved in async");
 		start();
-	}, 10);
+	}, 30);
 });
 
-QUnit.test("onKeyValue for promise-specific values", 3, function() {
+QUnit.test("computable", 4, function() {
 	stop(3);
 	var p = Promise.resolve("a");
 	canReflectPromise(p);
+	ObservationRecorder.start();
+	p[canSymbol.for("can.getKeyValue")]("value")
+	var deps = ObservationRecorder.stop();
+	QUnit.ok(deps.keyDependencies.has(p), "has the key dep");
+
 	p[canSymbol.for("can.onKeyValue")]("value", function(newVal) {
 		QUnit.equal(newVal, "a", "value updates on event");
 		start();
@@ -125,3 +131,4 @@ testHelpers.dev.devOnlyTest("promise readers throw errors (#70)", function() {
 		start();
 	});
 });
+

@@ -1,6 +1,6 @@
 {
   "name": "can-reflect-promise",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Reflection support for Promise types",
   "homepage": "https://canjs.com/doc/can-reflect-promise.html",
   "author": "Bitovi <contact@bitovi.com> (https://www.bitovi.com)",

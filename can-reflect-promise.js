@@ -55,7 +55,9 @@ function initPromise(promise) {
 		queues.batch.stop();
 
 		//!steal-remove-start
-		dev.error("Failed promise:", reason);
+		if (process.env.NODE_ENV !== 'production') {
+			dev.error("Failed promise:", reason);
+		}
 		//!steal-remove-end
 	});
 }

@@ -36,11 +36,11 @@
     "can-observation-recorder": "^1.0.0",
     "can-queues": "^1.0.0",
     "can-reflect": "^1.1.0",
-    "can-symbol": "^1.0.0",
-    "can-util": "^3.9.0"
+    "can-symbol": "^1.0.0"
   },
   "devDependencies": {
     "can-jquery": "^3.2.0",
+    "can-globals": "^1.0.0",
     "can-test-helpers": "^1.1.0",
     "detect-cyclic-packages": "^1.1.0",
     "jshint": "^2.9.1",

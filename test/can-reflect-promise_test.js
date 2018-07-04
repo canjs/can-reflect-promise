@@ -1,5 +1,5 @@
 var QUnit = require("steal-qunit");
-var GLOBAL = require("can-util/js/global/global");
+var GLOBAL = require("can-globals/global/global");
 var canSymbol = require("can-symbol");
 var canReflectPromise = require("can-reflect-promise");
 var ObservationRecorder = require("can-observation-recorder");

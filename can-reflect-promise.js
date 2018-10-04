@@ -123,6 +123,12 @@ function setupPromise(value) {
 				initPromise(this);
 			}
 			this[observeDataSymbol].handlers.delete([key, queue || "mutate", handler]);
+		},
+		"can.hasOwnKey": function(key) {
+			if (!this[observeDataSymbol]) {
+				initPromise(this);
+			}
+			return (key in this[observeDataSymbol] || Object.getOwnPropertyNames(this).indexOf(key) > -1);
 		}
 	});
 }

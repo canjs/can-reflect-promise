@@ -132,3 +132,15 @@ testHelpers.dev.devOnlyTest("promise readers throw errors (#70)", function() {
 	});
 });
 
+QUnit.test("hasOwnKey for promise value (#25)", function() {
+	var p = new Promise(function() {});
+	canReflectPromise(p);
+	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("isPending"), true, "isPending is a key");
+	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("isResolved"), true, "isResolved is a key");
+	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("isRejected"), true, "isRejected is a key");
+	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("value"), true, "value is a key");
+	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("state"), true, "state is a key");
+	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("reason"), true, "reason is a key");
+	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("foo"), false, "foo is not a key");
+})
+

@@ -128,7 +128,7 @@ function setupPromise(value) {
 			if (!this[observeDataSymbol]) {
 				initPromise(this);
 			}
-			return (key in this[observeDataSymbol] || Object.getOwnPropertyNames(this).indexOf(key) > -1);
+			return (key in this[observeDataSymbol]);
 		}
 	});
 }

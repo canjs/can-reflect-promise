@@ -74,7 +74,8 @@ QUnit.test("has all necessary symbols", function(assert) {
 
 });
 
-QUnit.test("getKeyValue for promise-specific values", 8, function(assert) {
+QUnit.test("getKeyValue for promise-specific values", function(assert) {
+	assert.expect(8);
 	var p = Promise.resolve("a");
 	canReflectPromise(p);
 	assert.equal(p[canSymbol.for("can.getKeyValue")]("isPending"), true, "isPending true in sync");
@@ -92,8 +93,9 @@ QUnit.test("getKeyValue for promise-specific values", 8, function(assert) {
 	}, 30);
 });
 
-QUnit.test("computable", 4, function(assert) {
-	stop(3);
+QUnit.test("computable", function(assert) {
+	assert.expect(4);
+	var done = assert.async();
 	var p = Promise.resolve("a");
 	canReflectPromise(p);
 	ObservationRecorder.start();
@@ -103,16 +105,14 @@ QUnit.test("computable", 4, function(assert) {
 
 	p[canSymbol.for("can.onKeyValue")]("value", function(newVal) {
 		assert.equal(newVal, "a", "value updates on event");
-		done();
 	});
 	p[canSymbol.for("can.onKeyValue")]("isResolved", function(newVal) {
 		assert.equal(newVal, true, "isResolved updates on event");
-		done();
 	});
 	p[canSymbol.for("can.onKeyValue")]("state", function(newVal) {
 		assert.equal(newVal, "resolved", "state updates on event");
-		done();
 	});
+	done();
 });
 
 testHelpers.dev.devOnlyTest("promise readers throw errors (#70)", function (assert) {

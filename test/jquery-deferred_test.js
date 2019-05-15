@@ -30,7 +30,8 @@ QUnit.test("has all necessary symbols", function(assert) {
 
 });
 
-QUnit.test("getKeyValue for promise-specific values", 8, function(assert) {
+QUnit.test("getKeyValue for promise-specific values", function(assert) {
+	assert.expect(8);
 	var d = new $.Deferred();
 	canReflectPromise(d);
 	assert.equal(d[canSymbol.for("can.getKeyValue")]("isPending"), true, "isPending true in sync");
@@ -49,26 +50,26 @@ QUnit.test("getKeyValue for promise-specific values", 8, function(assert) {
 	}, 10);
 });
 
-QUnit.test("onKeyValue for promise-specific values", 3, function(assert) {
-	stop(3);
+QUnit.test("onKeyValue for promise-specific values", function(assert) {
+	assert.expect(3);
+	var done = assert.async();
 	var d = new $.Deferred();
 	canReflectPromise(d);
 	d[canSymbol.for("can.onKeyValue")]("value", function(newVal) {
 		assert.equal(newVal, "a", "value updates on event");
-		done();
 	});
 	d[canSymbol.for("can.onKeyValue")]("isResolved", function(newVal) {
 		assert.equal(newVal, true, "isResolved updates on event");
-		done();
 	});
 	d[canSymbol.for("can.onKeyValue")]("state", function(newVal) {
 		assert.equal(newVal, "resolved", "state updates on event");
-		done();
 	});
 	d.resolve("a");
+	done();
 });
 
-QUnit.test("getKeyValue on $.Deferred().promise()", 2, function(assert) {
+QUnit.test("getKeyValue on $.Deferred().promise()", function(assert) {
+	assert.expect(2);
 	var d = new $.Deferred();
 	canReflectPromise(d);
 	assert.equal(d.promise()[canSymbol.for("can.getKeyValue")]("value"), undefined, "no value in sync");

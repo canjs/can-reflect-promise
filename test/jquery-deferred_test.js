@@ -8,75 +8,76 @@ QUnit.module("can-reflect-promise with jQuery.Deferred", {
 	//  that gets generated on demand, so no fancy setup is needed here.
 });
 
-QUnit.test("decorates promise", function() {
+QUnit.test("decorates promise", function(assert) {
 	var d = $.Deferred();
-	QUnit.ok(!d[canSymbol.for("can.getKeyValue")], "no decoration");
+	assert.ok(!d[canSymbol.for("can.getKeyValue")], "no decoration");
 
 	canReflectPromise(d);
-	QUnit.ok(d[canSymbol.for("can.getKeyValue")], "has decoration");
-	QUnit.ok(d.hasOwnProperty(canSymbol.for("can.getKeyValue")), "decoration strictly on object");
-	QUnit.ok(!Object.prototype[canSymbol.for("can.getKeyValue")], "decoration not on proto");
+	assert.ok(d[canSymbol.for("can.getKeyValue")], "has decoration");
+	assert.ok(d.hasOwnProperty(canSymbol.for("can.getKeyValue")), "decoration strictly on object");
+	assert.ok(!Object.prototype[canSymbol.for("can.getKeyValue")], "decoration not on proto");
 
 });
 
-QUnit.test("has all necessary symbols", function() {
+QUnit.test("has all necessary symbols", function(assert) {
 	var d = new $.Deferred();
 	canReflectPromise(d);
-	QUnit.ok(d[canSymbol.for("can.getKeyValue")], "can.getKeyValue");
-	QUnit.ok(d[canSymbol.for("can.getValue")], "can.getValue");
-	QUnit.ok(d[canSymbol.for("can.onKeyValue")], "can.onKeyValue");
-	QUnit.ok(d[canSymbol.for("can.offKeyValue")], "can.offKeyValue");
-	QUnit.equal(d[canSymbol.for("can.isValueLike")], false, "can.isValueLike");
+	assert.ok(d[canSymbol.for("can.getKeyValue")], "can.getKeyValue");
+	assert.ok(d[canSymbol.for("can.getValue")], "can.getValue");
+	assert.ok(d[canSymbol.for("can.onKeyValue")], "can.onKeyValue");
+	assert.ok(d[canSymbol.for("can.offKeyValue")], "can.offKeyValue");
+	assert.equal(d[canSymbol.for("can.isValueLike")], false, "can.isValueLike");
 
 });
 
-QUnit.test("getKeyValue for promise-specific values", 8, function() {
+QUnit.test("getKeyValue for promise-specific values", function(assert) {
+	assert.expect(8);
 	var d = new $.Deferred();
 	canReflectPromise(d);
-	QUnit.equal(d[canSymbol.for("can.getKeyValue")]("isPending"), true, "isPending true in sync");
-	QUnit.equal(d[canSymbol.for("can.getKeyValue")]("isResolved"), false, "isResolved false in sync");
-	QUnit.equal(d[canSymbol.for("can.getKeyValue")]("value"), undefined, "no value in sync");
-	QUnit.equal(d[canSymbol.for("can.getKeyValue")]("state"), "pending", "state pending in sync");
-	stop();
+	assert.equal(d[canSymbol.for("can.getKeyValue")]("isPending"), true, "isPending true in sync");
+	assert.equal(d[canSymbol.for("can.getKeyValue")]("isResolved"), false, "isResolved false in sync");
+	assert.equal(d[canSymbol.for("can.getKeyValue")]("value"), undefined, "no value in sync");
+	assert.equal(d[canSymbol.for("can.getKeyValue")]("state"), "pending", "state pending in sync");
+	var done = assert.async();
 
 	d.resolve("a"); // in some jQuery versions, resolving is sync
 	setTimeout(function() {
-		QUnit.equal(d[canSymbol.for("can.getKeyValue")]("value"), "a", "value in async");
-		QUnit.equal(d[canSymbol.for("can.getKeyValue")]("isPending"), false, "isPending false in async");
-		QUnit.equal(d[canSymbol.for("can.getKeyValue")]("isResolved"), true, "isResolved true in async");
-		QUnit.equal(d[canSymbol.for("can.getKeyValue")]("state"), "resolved", "state resolved in async");
-		start();
+		assert.equal(d[canSymbol.for("can.getKeyValue")]("value"), "a", "value in async");
+		assert.equal(d[canSymbol.for("can.getKeyValue")]("isPending"), false, "isPending false in async");
+		assert.equal(d[canSymbol.for("can.getKeyValue")]("isResolved"), true, "isResolved true in async");
+		assert.equal(d[canSymbol.for("can.getKeyValue")]("state"), "resolved", "state resolved in async");
+		done();
 	}, 10);
 });
 
-QUnit.test("onKeyValue for promise-specific values", 3, function() {
-	stop(3);
+QUnit.test("onKeyValue for promise-specific values", function(assert) {
+	assert.expect(3);
+	var done = assert.async();
 	var d = new $.Deferred();
 	canReflectPromise(d);
 	d[canSymbol.for("can.onKeyValue")]("value", function(newVal) {
-		QUnit.equal(newVal, "a", "value updates on event");
-		start();
+		assert.equal(newVal, "a", "value updates on event");
 	});
 	d[canSymbol.for("can.onKeyValue")]("isResolved", function(newVal) {
-		QUnit.equal(newVal, true, "isResolved updates on event");
-		start();
+		assert.equal(newVal, true, "isResolved updates on event");
 	});
 	d[canSymbol.for("can.onKeyValue")]("state", function(newVal) {
-		QUnit.equal(newVal, "resolved", "state updates on event");
-		start();
+		assert.equal(newVal, "resolved", "state updates on event");
 	});
 	d.resolve("a");
+	done();
 });
 
-QUnit.test("getKeyValue on $.Deferred().promise()", 2, function() {
+QUnit.test("getKeyValue on $.Deferred().promise()", function(assert) {
+	assert.expect(2);
 	var d = new $.Deferred();
 	canReflectPromise(d);
-	QUnit.equal(d.promise()[canSymbol.for("can.getKeyValue")]("value"), undefined, "no value in sync");
-	stop();
+	assert.equal(d.promise()[canSymbol.for("can.getKeyValue")]("value"), undefined, "no value in sync");
+	var done = assert.async();
 
 	d.resolve("a"); // in some jQuery versions, resolving is sync
 	setTimeout(function() {
-		QUnit.equal(d.promise()[canSymbol.for("can.getKeyValue")]("value"), "a", "value in async");
-		start();
+		assert.equal(d.promise()[canSymbol.for("can.getKeyValue")]("value"), "a", "value in async");
+		done();
 	}, 10);
 });

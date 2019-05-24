@@ -9,7 +9,7 @@ var nativePromise = GLOBAL().Promise;
 var Promise;
 
 QUnit.module("can-reflect-promise", {
-	setup: function() {
+	beforeEach: function(assert) {
 		// Make a temporary Promise subclass per suite, so that we can test before vs. after decoration
 		//  in an isolated fashion
 		function tempPromise() {
@@ -50,72 +50,72 @@ QUnit.module("can-reflect-promise", {
 
 		Promise = tempPromise;
 	},
-	teardown: function() {
+	afterEach: function(assert) {
 		Promise = null;
 	}
 });
 
-QUnit.test("decorates promise", function() {
-	QUnit.ok(!Promise.prototype[canSymbol.for("can.getKeyValue")], "no decoration");
+QUnit.test("decorates promise", function(assert) {
+	assert.ok(!Promise.prototype[canSymbol.for("can.getKeyValue")], "no decoration");
 
 	canReflectPromise(new Promise(function() {}));
-	QUnit.ok(Promise.prototype[canSymbol.for("can.getKeyValue")], "has decoration");
+	assert.ok(Promise.prototype[canSymbol.for("can.getKeyValue")], "has decoration");
 
 });
 
-QUnit.test("has all necessary symbols", function() {
+QUnit.test("has all necessary symbols", function(assert) {
 	var p = new Promise(function() {});
 	canReflectPromise(p);
-	QUnit.ok(p[canSymbol.for("can.getKeyValue")], "can.getKeyValue");
-	QUnit.ok(p[canSymbol.for("can.getValue")], "can.getValue");
-	QUnit.ok(p[canSymbol.for("can.onKeyValue")], "can.onKeyValue");
-	QUnit.ok(p[canSymbol.for("can.offKeyValue")], "can.offKeyValue");
-	QUnit.equal(p[canSymbol.for("can.isValueLike")], false, "can.isValueLike");
+	assert.ok(p[canSymbol.for("can.getKeyValue")], "can.getKeyValue");
+	assert.ok(p[canSymbol.for("can.getValue")], "can.getValue");
+	assert.ok(p[canSymbol.for("can.onKeyValue")], "can.onKeyValue");
+	assert.ok(p[canSymbol.for("can.offKeyValue")], "can.offKeyValue");
+	assert.equal(p[canSymbol.for("can.isValueLike")], false, "can.isValueLike");
 
 });
 
-QUnit.test("getKeyValue for promise-specific values", 8, function() {
+QUnit.test("getKeyValue for promise-specific values", function(assert) {
+	assert.expect(8);
 	var p = Promise.resolve("a");
 	canReflectPromise(p);
-	QUnit.equal(p[canSymbol.for("can.getKeyValue")]("isPending"), true, "isPending true in sync");
-	QUnit.equal(p[canSymbol.for("can.getKeyValue")]("isResolved"), false, "isResolved false in sync");
-	QUnit.equal(p[canSymbol.for("can.getKeyValue")]("value"), undefined, "no value in sync");
-	QUnit.equal(p[canSymbol.for("can.getKeyValue")]("state"), "pending", "state pending in sync");
-	stop();
+	assert.equal(p[canSymbol.for("can.getKeyValue")]("isPending"), true, "isPending true in sync");
+	assert.equal(p[canSymbol.for("can.getKeyValue")]("isResolved"), false, "isResolved false in sync");
+	assert.equal(p[canSymbol.for("can.getKeyValue")]("value"), undefined, "no value in sync");
+	assert.equal(p[canSymbol.for("can.getKeyValue")]("state"), "pending", "state pending in sync");
+	var done = assert.async();
 
 	setTimeout(function() {
-		QUnit.equal(p[canSymbol.for("can.getKeyValue")]("value"), "a", "value in async");
-		QUnit.equal(p[canSymbol.for("can.getKeyValue")]("isPending"), false, "isPending false in async");
-		QUnit.equal(p[canSymbol.for("can.getKeyValue")]("isResolved"), true, "isResolved true in async");
-		QUnit.equal(p[canSymbol.for("can.getKeyValue")]("state"), "resolved", "state resolved in async");
-		start();
+		assert.equal(p[canSymbol.for("can.getKeyValue")]("value"), "a", "value in async");
+		assert.equal(p[canSymbol.for("can.getKeyValue")]("isPending"), false, "isPending false in async");
+		assert.equal(p[canSymbol.for("can.getKeyValue")]("isResolved"), true, "isResolved true in async");
+		assert.equal(p[canSymbol.for("can.getKeyValue")]("state"), "resolved", "state resolved in async");
+		done();
 	}, 30);
 });
 
-QUnit.test("computable", 4, function() {
-	stop(3);
+QUnit.test("computable", function(assert) {
+	assert.expect(4);
+	var done = assert.async();
 	var p = Promise.resolve("a");
 	canReflectPromise(p);
 	ObservationRecorder.start();
 	p[canSymbol.for("can.getKeyValue")]("value")
 	var deps = ObservationRecorder.stop();
-	QUnit.ok(deps.keyDependencies.has(p), "has the key dep");
+	assert.ok(deps.keyDependencies.has(p), "has the key dep");
 
 	p[canSymbol.for("can.onKeyValue")]("value", function(newVal) {
-		QUnit.equal(newVal, "a", "value updates on event");
-		start();
+		assert.equal(newVal, "a", "value updates on event");
 	});
 	p[canSymbol.for("can.onKeyValue")]("isResolved", function(newVal) {
-		QUnit.equal(newVal, true, "isResolved updates on event");
-		start();
+		assert.equal(newVal, true, "isResolved updates on event");
 	});
 	p[canSymbol.for("can.onKeyValue")]("state", function(newVal) {
-		QUnit.equal(newVal, "resolved", "state updates on event");
-		start();
+		assert.equal(newVal, "resolved", "state updates on event");
 	});
+	done();
 });
 
-testHelpers.dev.devOnlyTest("promise readers throw errors (#70)", function() {
+testHelpers.dev.devOnlyTest("promise readers throw errors (#70)", function (assert) {
 	var teardown = testHelpers.dev.willError(/Rejected Reason/);
 
 	var promise = Promise.reject("Rejected Reason");
@@ -125,22 +125,22 @@ testHelpers.dev.devOnlyTest("promise readers throw errors (#70)", function() {
 	// trigger initPromise
 	promise[canSymbol.for("can.onKeyValue")]("value", function() {});
 
-	stop();
+	var done = assert.async();
 	promise.catch(function() {
-		QUnit.equal(teardown(), 1, 'error thrown');
-		start();
+		assert.equal(teardown(), 1, 'error thrown');
+		done();
 	});
 });
 
-QUnit.test("hasOwnKey for promise value (#25)", function() {
+QUnit.test("hasOwnKey for promise value (#25)", function(assert) {
 	var p = new Promise(function() {});
 	canReflectPromise(p);
-	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("isPending"), true, "isPending is a key");
-	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("isResolved"), true, "isResolved is a key");
-	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("isRejected"), true, "isRejected is a key");
-	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("value"), true, "value is a key");
-	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("state"), true, "state is a key");
-	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("reason"), true, "reason is a key");
-	QUnit.equal(p[canSymbol.for("can.hasOwnKey")]("foo"), false, "foo is not a key");
+	assert.equal(p[canSymbol.for("can.hasOwnKey")]("isPending"), true, "isPending is a key");
+	assert.equal(p[canSymbol.for("can.hasOwnKey")]("isResolved"), true, "isResolved is a key");
+	assert.equal(p[canSymbol.for("can.hasOwnKey")]("isRejected"), true, "isRejected is a key");
+	assert.equal(p[canSymbol.for("can.hasOwnKey")]("value"), true, "value is a key");
+	assert.equal(p[canSymbol.for("can.hasOwnKey")]("state"), true, "state is a key");
+	assert.equal(p[canSymbol.for("can.hasOwnKey")]("reason"), true, "reason is a key");
+	assert.equal(p[canSymbol.for("can.hasOwnKey")]("foo"), false, "foo is not a key");
 })
 
